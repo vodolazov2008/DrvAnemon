@@ -4,15 +4,29 @@
 // MVID: EDD75D42-CE83-4E55-B8C5-83132A68E0A4
 // Assembly location: D:\RapidScada\DrvAnemon\SCADA\ScadaComm\Drv\DrvAnemon.Logic.dll
 
-#nullable disable
-namespace Scada.Comm.Drivers.DrvAnemon.Logic;
-
-internal static class TagIndex
+namespace Scada.Comm.Drivers.DrvAnemon.Logic
 {
-  public const int PacketReceived = 0;
-  public const int PacketFailed = 1;
-  public const int DateTime = 2;
-  public const int Sensors = 3;
+    /// <summary>
+    /// Индексы тегов для HTTP протокола версии 3
+    /// </summary>
+    internal static class TagIndex
+    {
+        // Основные теги устройства
+        public const int PacketReceived = 0;    // Пакеты получено
+        public const int PacketFailed = 1;      // Ошибки пакетов
+        public const int LastUpdateTime = 2;    // Время последнего обновления
+        
+        // Теги датчиков начинаются с индекса 3
+        public const int Sensors = 3;
 
-  public static int Sensor(int sensorNum) => 3 + sensorNum - 1;
+        /// <summary>
+        /// Получение индекса тега датчика
+        /// </summary>
+        /// <param name="sensorNum">Номер датчика (начинается с 1)</param>
+        /// <returns>Индекс тега датчика</returns>
+        public static int Sensor(int sensorNum)
+        {
+            return Sensors + sensorNum - 1;
+        }
+    }
 }

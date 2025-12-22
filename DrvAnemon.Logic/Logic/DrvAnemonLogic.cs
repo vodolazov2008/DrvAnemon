@@ -7,15 +7,29 @@
 using Scada.Comm.Config;
 using Scada.Comm.Devices;
 
-#nullable disable
-namespace Scada.Comm.Drivers.DrvAnemon.Logic;
-
-public class DrvAnemonLogic(ICommContext commContext) : DriverLogic(commContext)
+namespace Scada.Comm.Drivers.DrvAnemon.Logic
 {
-  public virtual string Code => "DrvAnemon";
+    /// <summary>
+    /// Логика драйвера Anemon для HTTP протокола версии 3
+    /// </summary>
+    public class DrvAnemonLogic : DriverLogic
+    {
+        public DrvAnemonLogic(ICommContext commContext)
+            : base(commContext)
+        {
+        }
 
-  public virtual DeviceLogic CreateDevice(ILineContext lineContext, DeviceConfig deviceConfig)
-  {
-    return (DeviceLogic) new DevAnemonLogic(this.CommContext, lineContext, deviceConfig);
-  }
+        /// <summary>
+        /// Код драйвера
+        /// </summary>
+        public override string Code => "DrvAnemon";
+
+        /// <summary>
+        /// Создание устройства
+        /// </summary>
+        public override DeviceLogic CreateDevice(ILineContext lineContext, DeviceConfig deviceConfig)
+        {
+            return new DevAnemonLogic(CommContext, lineContext, deviceConfig);
+        }
+    }
 }

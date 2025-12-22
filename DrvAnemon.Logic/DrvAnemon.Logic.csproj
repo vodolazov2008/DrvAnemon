@@ -36,10 +36,11 @@
     <Compile Include="CnlPrototypeFactory.cs" />
     <Compile Include="DriverUtils.cs" />
     <Compile Include="TagCode.cs" />
+    <Compile Include="HttpServer.cs" />
     <Compile Include="Logic\DevAnemonLogic.cs" />
     <Compile Include="Logic\DrvAnemonLogic.cs" />
-    <Compile Include="Logic\Protocol.cs" />
     <Compile Include="Logic\TagIndex.cs" />
+    <Compile Include="ProtocolV3.cs" />
     <Compile Include="AssemblyInfo.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
