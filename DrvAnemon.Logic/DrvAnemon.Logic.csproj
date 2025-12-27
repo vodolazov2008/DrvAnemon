@@ -1,47 +1,54 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <!--Project was exported from assembly: D:\RapidScada\DrvAnemon\SCADA\ScadaComm\Drv\DrvAnemon.Logic.dll-->
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{6F142B4B-07C0-47EC-8B95-43D5FB08F8EA}</ProjectGuid>
+    <TargetFramework>net9.0</TargetFramework>
+    <PlatformTarget>x64</PlatformTarget>
     <OutputType>Library</OutputType>
     <AssemblyName>DrvAnemon.Logic</AssemblyName>
-    <ApplicationVersion>6.0.0.0</ApplicationVersion>
+    <AssemblyVersion>6.0.0.0</AssemblyVersion>
+    <FileVersion>6.0.0.0</FileVersion>
     <RootNamespace>Scada.Comm.Drivers.DrvAnemon</RootNamespace>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <GenerateTargetFrameworkAttribute>false</GenerateTargetFrameworkAttribute>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
-    <DebugSymbols>true</DebugSymbols>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <PlatformTarget>AnyCPU</PlatformTarget>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <PlatformTarget>x64</PlatformTarget>
     <DebugType>pdbonly</DebugType>
+    <DebugSymbols>true</DebugSymbols>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+
   <ItemGroup>
-    <Reference Include="netstandard" />
+    <PackageReference Include="System.Text.Json" Version="8.0.5" />
   </ItemGroup>
+
   <ItemGroup>
-    <Compile Include="CnlPrototypeFactory.cs" />
-    <Compile Include="DriverUtils.cs" />
-    <Compile Include="TagCode.cs" />
-    <Compile Include="HttpServer.cs" />
-    <Compile Include="Logic\DevAnemonLogic.cs" />
-    <Compile Include="Logic\DrvAnemonLogic.cs" />
-    <Compile Include="Logic\TagIndex.cs" />
-    <Compile Include="ProtocolV3.cs" />
-    <Compile Include="AssemblyInfo.cs" />
+    <Reference Include="ScadaCommon">
+      <HintPath>/Users/avodolazov/Desktop/scada-v6/ScadaCommon/ScadaCommon/bin/Release/netstandard2.0/ScadaCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="ScadaCommon.Log">
+      <HintPath>/Users/avodolazov/Desktop/scada-v6/ScadaCommon/ScadaCommon.Log/bin/Release/netstandard2.0/ScadaCommon.Log.dll</HintPath>
+    </Reference>
+    <Reference Include="ScadaCommCommon">
+      <HintPath>/Users/avodolazov/Desktop/scada-v6/ScadaComm/ScadaComm/ScadaCommCommon/bin/Release/netstandard2.0/ScadaCommCommon.dll</HintPath>
+    </Reference>
+    <Reference Include="ScadaCommEngine">
+      <HintPath>/Users/avodolazov/Desktop/scada-v6/ScadaComm/ScadaComm/ScadaCommEngine/bin/Release/netstandard2.0/ScadaCommEngine.dll</HintPath>
+    </Reference>
   </ItemGroup>
-  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+
 </Project>

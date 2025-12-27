@@ -1,75 +1,61 @@
 ﻿using Scada.Comm.Config;
+using Scada.Comm.Channels;
+using Scada.Comm.Drivers.DrvAnemon;
 using Scada.Comm.Devices;
 using Scada.Config;
 using Scada.Data.Const;
 using Scada.Data.Models;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
+using System.Text;
 
 namespace Scada.Comm.Drivers.DrvAnemon.Logic
 {
     /// <summary>
-    /// Логика устройства Anemon для HTTP протокола версии 3
+    /// Логика устройства ANEMON-AVTO для TCP протокола
     /// </summary>
     internal class DevAnemonLogic : DeviceLogic
     {
         private const int DefDataLifetime = 600;
-        private const int DefaultHttpPort = 7120;
-        private const string DefaultToken = "3A:E7:4E:00:95:1E";
+        private const int DefaultTcpPort = 4004;
         
         private readonly Dictionary<string, DeviceDataStore> _deviceDataStore;
         private readonly object _dataStoreLock = new object();
-        private HttpServer _httpServer;
+        private readonly Dictionary<string, List<byte>> _fragmentedData; // Для обработки фрагментации
+        private readonly object _fragmentLock = new object();
+        
         private TimeSpan _dataLifetime;
-        private int _httpPort;
-        private string _deviceToken;
-        private bool _isServerRunning;
+        private int _tcpPort;
         private DateTime _lastSessionTime;
         private bool _lastRequestOK;
 
         public DevAnemonLogic(ICommContext commContext, ILineContext lineContext, DeviceConfig deviceConfig)
             : base(commContext, lineContext, deviceConfig)
         {
-            ConnectionRequired = false;
+            ConnectionRequired = false; // TCP сервер управляет соединениями
             _deviceDataStore = new Dictionary<string, DeviceDataStore>();
+            _fragmentedData = new Dictionary<string, List<byte>>();
             _dataLifetime = TimeSpan.FromSeconds(DefDataLifetime);
-            _httpPort = DefaultHttpPort;
-            _deviceToken = DefaultToken;
-            _isServerRunning = false;
+            _tcpPort = DefaultTcpPort;
             _lastSessionTime = DateTime.MinValue;
             _lastRequestOK = false;
         }
 
         /// <summary>
-        /// Запуск HTTP сервера при старте линии связи
+        /// Загрузка конфигурации при старте линии связи
         /// </summary>
         public override void OnCommLineStart()
         {
             base.OnCommLineStart();
             
-            // Загрузка конфигурации
-            OptionList customOptions = LineContext.LineConfig.CustomOptions;
+            // Загрузка конфигурации из свойств линии связи
+            var customOptions = LineContext.LineConfig.CustomOptions;
             _dataLifetime = TimeSpan.FromSeconds(ScadaUtils.GetValueAsInt(customOptions, "DataLifetime", DefDataLifetime));
-            _httpPort = ScadaUtils.GetValueAsInt(customOptions, "HttpPort", DefaultHttpPort);
-            _deviceToken = ScadaUtils.GetValueAsString(customOptions, "DeviceToken", DefaultToken);
-
-            // Запуск HTTP сервера
-            _ = Task.Run(async () =>
-            {
-                try
-                {
-                    _httpServer = new HttpServer(_httpPort, this);
-                    _isServerRunning = true;
-                    Log.WriteLine($"Запуск HTTP сервера на порту {_httpPort} для протокола Anemon v3");
-                    await _httpServer.StartAsync();
-                }
-                catch (Exception ex)
-                {
-                    Log.WriteLine($"Ошибка запуска HTTP сервера: {ex.Message}");
-                    _isServerRunning = false;
-                }
-            });
+            // Для TCP сервера используем порт по умолчанию, так как LineConfig может не содержать свойство порта
+            _tcpPort = DefaultTcpPort;
+            
+            Log.WriteLine($"Драйвер ANEMON-AVTO запущен на TCP порту {_tcpPort}");
+            Log.WriteLine($"Время актуальности данных: {_dataLifetime.TotalSeconds} секунд");
         }
 
         /// <summary>
@@ -77,7 +63,7 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
         /// </summary>
         public override bool CheckBehaviorSupport(ChannelBehavior behavior)
         {
-            return behavior == ChannelBehavior.Server;
+            return behavior == ChannelBehavior.Slave; // Поддерживаем только TCP сервер
         }
 
         /// <summary>
@@ -87,7 +73,9 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
         {
             foreach (CnlPrototypeGroup cnlPrototypeGroup in CnlPrototypeFactory.GetCnlPrototypeGroups())
             {
-                DeviceTags.AddGroup(cnlPrototypeGroup.ToTagGroup());
+                // Создаем простую группу тегов для демонстрации
+                var tagGroup = new TagGroup { Name = cnlPrototypeGroup.Name };
+                DeviceTags.AddGroup(tagGroup);
             }
         }
 
@@ -97,9 +85,9 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
         public override void InitDeviceData()
         {
             base.InitDeviceData();
-            DeviceData.Set(0, 0.0); // Пакеты получено
-            DeviceData.Set(1, 0.0); // Ошибки
-            DeviceData.Set(2, DateTime.UtcNow); // Время последнего обновления
+            DeviceData.Set(0, 0.0); // Количество полученных пакетов
+            DeviceData.Set(1, 0.0); // Количество ошибок
+            DeviceData.Set(2, (double)DateTime.UtcNow.Ticks); // Время последнего обновления в тиках
         }
 
         /// <summary>
@@ -110,8 +98,8 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
             base.Session();
 
             // Обновление статистики
-            int packetReceived = (int)DeviceData.Get(0);
-            int packetFailed = (int)DeviceData.Get(1);
+            int packetReceived = Convert.ToInt32(DeviceData.Get(0));
+            int packetFailed = Convert.ToInt32(DeviceData.Get(1));
             
             DeviceStats.SessionCount = DeviceStats.RequestCount = packetReceived + packetFailed;
             DeviceStats.SessionErrors = DeviceStats.RequestErrors = packetFailed;
@@ -128,51 +116,95 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
                     Log.WriteLine($"Установка недостоверности текущих данных для {Title}");
                     DeviceData.Invalidate(3, 258); // Инвалидация тегов датчиков
                 }
-                DeviceStatus = _lastSessionTime > DateTime.MinValue ? DeviceStatus.Error : DeviceStatus.Off;
+                DeviceStatus = _lastSessionTime > DateTime.MinValue ? DeviceStatus.Error : DeviceStatus.Undefined;
             }
 
             DeviceData.SetStatusTag(DeviceStatus);
         }
 
         /// <summary>
-        /// Обработка входящего HTTP запроса
+        /// Обработка входящих TCP данных от устройства
         /// </summary>
-        public void ProcessHttpRequest(string requestBody, string token)
+        /// <param name="connectionId">Идентификатор соединения</param>
+        /// <param name="data">Данные от устройства</param>
+        /// <returns>Ответные данные для отправки (null если ответа нет)</returns>
+        public byte[] ProcessTcpData(string connectionId, byte[] data)
         {
             try
             {
                 _lastSessionTime = DateTime.UtcNow;
                 
-                // Проверка токена
-                if (!ValidateToken(token))
+                // Обработка фрагментации данных
+                var completeMessage = AssembleFragmentedMessage(connectionId, data);
+                if (completeMessage == null)
                 {
-                    Log.WriteLine("Ошибка: недействительный токен");
-                    IncrementErrorCount();
-                    _lastRequestOK = false;
-                    return;
+                    // Сообщение еще не полное, ожидаем следующий фрагмент
+                    return null;
                 }
 
-                // Обработка команды
-                var response = ProtocolV3.ProcessCommand(requestBody, token, this);
+                // Обработка сообщения через протокол ANEMON-AVTO
+                var response = AnemonAvtoProtocol.ProcessTcpData(completeMessage, this, (msg) => Log.WriteLine(msg));
                 
                 if (!string.IsNullOrEmpty(response))
                 {
                     IncrementSuccessCount();
                     _lastRequestOK = true;
-                    Log.WriteLine($"HTTP команда обработана успешно");
+                    
+                    // Подготовка ответа с завершающим символом
+                    var responseBytes = AnemonAvtoProtocol.PrepareDataForSending(response);
+                    Log.WriteLine($"Обработка TCP данных завершена успешно, ответ: {response.Length} байт");
+                    return responseBytes;
                 }
                 else
                 {
                     IncrementErrorCount();
                     _lastRequestOK = false;
-                    Log.WriteLine("Ошибка обработки HTTP команды");
+                    Log.WriteLine("Ошибка обработки TCP команды");
+                    return null;
                 }
             }
             catch (Exception ex)
             {
-                Log.WriteLine($"Ошибка обработки HTTP запроса: {ex.Message}");
+                Log.WriteLine($"Ошибка обработки TCP данных: {ex.Message}");
                 IncrementErrorCount();
                 _lastRequestOK = false;
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Обработка фрагментированных TCP сообщений
+        /// </summary>
+        private byte[] AssembleFragmentedMessage(string connectionId, byte[] data)
+        {
+            lock (_fragmentLock)
+            {
+                if (!_fragmentedData.ContainsKey(connectionId))
+                {
+                    _fragmentedData[connectionId] = new List<byte>();
+                }
+
+                var connectionBuffer = _fragmentedData[connectionId];
+                connectionBuffer.AddRange(data);
+
+                // Проверяем наличие завершающего символа '~'
+                string messageText = Encoding.UTF8.GetString(connectionBuffer.ToArray());
+                
+                if (messageText.Contains("~"))
+                {
+                    // Найден завершающий символ, извлекаем полное сообщение
+                    int terminatorIndex = messageText.IndexOf('~');
+                    byte[] completeMessage = new byte[terminatorIndex];
+                    Array.Copy(connectionBuffer.ToArray(), completeMessage, terminatorIndex);
+                    
+                    // Очищаем буфер для этого соединения
+                    connectionBuffer.Clear();
+                    
+                    return completeMessage;
+                }
+
+                // Сообщение еще не полное
+                return null;
             }
         }
 
@@ -195,6 +227,44 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
                 deviceData.LastTimestamp = timestamp;
                 deviceData.SensorValues = sensorValues ?? new Dictionary<int, double>();
                 deviceData.LastUpdateTime = DateTime.UtcNow;
+
+                // Обновление тегов в Rapid SCADA
+                UpdateDeviceTags(sensorValues ?? new Dictionary<int, double>());
+            }
+        }
+
+        /// <summary>
+        /// Обновление тегов устройства в Rapid SCADA
+        /// </summary>
+        private void UpdateDeviceTags(Dictionary<int, double> sensorValues)
+        {
+            if (sensorValues == null)
+                return;
+
+            foreach (var kvp in sensorValues)
+            {
+                int tagIndex = kvp.Key;
+                double value = kvp.Value;
+                
+                // Проверяем диапазон тегов (начинаем с 3)
+                if (tagIndex >= 3 && tagIndex < 1000)
+                {
+                    DeviceData.Set(tagIndex, value);
+                }
+            }
+
+            // Обновление времени последнего обновления
+            DeviceData.Set(2, (double)DateTime.UtcNow.Ticks);
+        }
+
+        /// <summary>
+        /// Установка строкового тега
+        /// </summary>
+        public void SetStringTag(int tagIndex, string value)
+        {
+            if (tagIndex >= 3 && tagIndex < 1000)
+            {
+                DeviceData.Set(tagIndex, value);
             }
         }
 
@@ -213,19 +283,11 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
         }
 
         /// <summary>
-        /// Валидация токена устройства
-        /// </summary>
-        private bool ValidateToken(string token)
-        {
-            return !string.IsNullOrEmpty(token) && token.Equals(_deviceToken, StringComparison.OrdinalIgnoreCase);
-        }
-
-        /// <summary>
         /// Увеличение счетчика успешных пакетов
         /// </summary>
         private void IncrementSuccessCount()
         {
-            double currentCount = DeviceData.Get(0);
+            double currentCount = Convert.ToDouble(DeviceData.Get(0));
             DeviceData.Set(0, currentCount + 1);
         }
 
@@ -234,39 +296,20 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
         /// </summary>
         private void IncrementErrorCount()
         {
-            double currentCount = DeviceData.Get(1);
+            double currentCount = Convert.ToDouble(DeviceData.Get(1));
             DeviceData.Set(1, currentCount + 1);
         }
 
         /// <summary>
-        /// Завершение запроса
+        /// Обработка закрытия соединения
         /// </summary>
-        private void FinishRequest(bool success)
+        public void OnConnectionClosed(string connectionId)
         {
-            DeviceData.Add(success ? 0 : 1, 1.0);
-            _lastRequestOK = success;
-            _lastSessionTime = DateTime.UtcNow;
-
-            if (success)
+            lock (_fragmentLock)
             {
-                DeviceData.Set(2, DateTime.UtcNow); // Обновление времени
+                _fragmentedData.Remove(connectionId);
             }
-        }
-
-        /// <summary>
-        /// Завершение сеанса
-        /// </summary>
-        private void FinishSession()
-        {
-            // Дополнительная логика завершения сеанса при необходимости
-        }
-
-        /// <summary>
-        /// Завершение команды
-        /// </summary>
-        private void FinishCommand()
-        {
-            // Логика завершения команды при необходимости
+            Log.WriteLine($"TCP соединение {connectionId} закрыто");
         }
 
         /// <summary>
@@ -275,21 +318,18 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
         public override void SendCommand(TeleCommand cmd)
         {
             base.SendCommand(cmd);
-            Log.WriteLine("HTTP протокол версии 3 не поддерживает отправку команд от сервера к устройству");
-            FinishCommand();
+            Log.WriteLine("TCP протокол ANEMON-AVTO не поддерживает отправку команд от сервера к устройству");
         }
 
         /// <summary>
         /// Освобождение ресурсов
         /// </summary>
-        protected override void Dispose(bool disposing)
+        public void Dispose()
         {
-            if (disposing)
+            lock (_fragmentLock)
             {
-                _httpServer?.Stop();
-                _httpServer?.Dispose();
+                _fragmentedData.Clear();
             }
-            base.Dispose(disposing);
         }
     }
 
@@ -298,7 +338,7 @@ namespace Scada.Comm.Drivers.DrvAnemon.Logic
     /// </summary>
     internal class DeviceDataStore
     {
-        public string Serial { get; set; }
+        public string Serial { get; set; } = string.Empty;
         public long LastTimestamp { get; set; }
         public Dictionary<int, double> SensorValues { get; set; } = new Dictionary<int, double>();
         public DateTime LastUpdateTime { get; set; }
