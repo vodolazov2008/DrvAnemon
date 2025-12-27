@@ -1,6 +1,6 @@
 ﻿using Scada.Comm.Config;
 using Scada.Comm.Channels;
-using Scada.Comm.Drivers.DrvAnemon;
+using Scada.Comm.Drivers.DrvAnemon3;
 using Scada.Comm.Devices;
 using Scada.Config;
 using Scada.Data.Const;
@@ -9,7 +9,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace Scada.Comm.Drivers.DrvAnemon.Logic
+namespace Scada.Comm.Drivers.DrvAnemon3.Logic
 {
     /// <summary>
     /// Логика устройства ANEMON-AVTO для TCP протокола

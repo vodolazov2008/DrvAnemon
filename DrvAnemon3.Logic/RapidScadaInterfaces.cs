@@ -3,9 +3,9 @@ using Scada.Comm.Channels;
 using Scada.Comm.Devices;
 using Scada.Config;
 
-namespace Scada.Comm.Drivers.DrvAnemon
+namespace Scada.Comm.Drivers.DrvAnemon3
 {
-    // Интерфейсы Rapid SCADA для драйвера DrvAnemon
+    // Интерфейсы Rapid SCADA для драйвера DrvAnemon3
     // Этот файл предоставляет псевдонимы для удобства разработки
     
     /// <summary>

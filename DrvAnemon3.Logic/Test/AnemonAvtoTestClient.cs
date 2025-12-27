@@ -4,7 +4,7 @@ using System.Text;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace Scada.Comm.Drivers.DrvAnemon.Test
+namespace Scada.Comm.Drivers.DrvAnemon3.Test
 {
     /// <summary>
     /// Тестовый клиент для симуляции устройств ANEMON-AVTO

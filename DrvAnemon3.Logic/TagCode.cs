@@ -1,11 +1,10 @@
 ﻿// Decompiled with JetBrains decompiler
-// Type: Scada.Comm.Drivers.DrvAnemon.TagCode
-// Assembly: DrvAnemon.Logic, Version=6.0.0.0, Culture=neutral, PublicKeyToken=null
+// Type: Scada.Comm.Drivers.DrvAnemon3.TagCode
+// Assembly: DrvAnemon3.Logic, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null
 // MVID: EDD75D42-CE83-4E55-B8C5-83132A68E0A4
-// Assembly location: D:\RapidScada\DrvAnemon\SCADA\ScadaComm\Drv\DrvAnemon.Logic.dll
+// Assembly location: D:\RapidScada\DrvAnemon3\SCADA\ScadaComm\Drv\DrvAnemon3.Logic.dll
 
-#nullable disable
-namespace Scada.Comm.Drivers.DrvAnemon;
+namespace Scada.Comm.Drivers.DrvAnemon3;
 
 internal static class TagCode
 {

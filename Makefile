@@ -11,8 +11,8 @@ DOTNET = dotnet
 # Цели по умолчанию
 .PHONY: all build clean test help install restore
 
-# Сборка всего проекта
-all: restore build
+# Сборка только основного проекта Logic
+all: restore build-logic
 
 # Полная сборка решения
 build: $(SOLUTION)
@@ -67,7 +67,7 @@ lint:
 	@echo "✅ Проверка завершена!"
 
 # Быстрая пересборка
-rebuild: clean build
+rebuild: clean build-logic
 
 # Информация о проекте
 info:
@@ -81,9 +81,9 @@ info:
 
 # Проверка работоспособности
 check: restore
-	@echo "🔧 Проверка работоспособности..."
-	$(DOTNET) build $(SOLUTION) --configuration $(BUILD_CONFIG) --verbosity minimal
-	@echo "✅ Проект собирается без ошибок!"
+	@echo "🔧 Проверка работоспособности Logic проекта..."
+	$(DOTNET) build $(LOGIC_PROJECT) --configuration $(BUILD_CONFIG) --verbosity minimal
+	@echo "✅ DrvAnemon.Logic собирается без ошибок!"
 
 # Помощь
 help:

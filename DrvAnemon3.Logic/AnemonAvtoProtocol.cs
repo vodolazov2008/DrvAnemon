@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Scada.Comm.Drivers.DrvAnemon.Logic;
+using Scada.Comm.Drivers.DrvAnemon3.Logic;
 
-namespace Scada.Comm.Drivers.DrvAnemon
+namespace Scada.Comm.Drivers.DrvAnemon3
 {
     /// <summary>
     /// Протокол ANEMON-AVTO - TCP/JSON протокол для обмена данными с устройствами

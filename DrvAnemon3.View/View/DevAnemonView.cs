@@ -1,15 +1,14 @@
 ﻿// Decompiled with JetBrains decompiler
-// Type: Scada.Comm.Drivers.DrvAnemon.View.DevAnemonView
-// Assembly: DrvAnemon.View, Version=6.0.0.0, Culture=neutral, PublicKeyToken=null
+// Type: Scada.Comm.Drivers.DrvAnemon3.View.DevAnemonView
+// Assembly: DrvAnemon3.View, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null
 // MVID: 32160B11-AF08-44A7-A737-2520F961A88B
-// Assembly location: D:\RapidScada\DrvAnemon\SCADA\ScadaAdmin\Lib\DrvAnemon.View.dll
+// Assembly location: D:\RapidScada\DrvAnemon3\SCADA\ScadaAdmin\Lib\DrvAnemon3.View.dll
 
 using Scada.Comm.Config;
 using Scada.Comm.Devices;
 using System.Collections.Generic;
 
-#nullable disable
-namespace Scada.Comm.Drivers.DrvAnemon.View;
+namespace Scada.Comm.Drivers.DrvAnemon3.View;
 
 internal class DevAnemonView(
   DriverView parentView,

@@ -1,14 +1,13 @@
 ﻿// Decompiled with JetBrains decompiler
-// Type: Scada.Comm.Drivers.DrvAnemon.CnlPrototypeFactory
-// Assembly: DrvAnemon.View, Version=6.0.0.0, Culture=neutral, PublicKeyToken=null
-// MVID: 32160B11-AF08-44A7-A737-2520F961A88B
-// Assembly location: D:\RapidScada\DrvAnemon\SCADA\ScadaAdmin\Lib\DrvAnemon.View.dll
+// Type: Scada.Comm.Drivers.DrvAnemon3.CnlPrototypeFactory
+// Assembly: DrvAnemon3.Logic, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null
+// MVID: EDD75D42-CE83-4E55-B8C5-83132A68E0A4
+// Assembly location: D:\RapidScada\DrvAnemon3\SCADA\ScadaComm\Drv\DrvAnemon3.Logic.dll
 
 using Scada.Comm.Devices;
 using System.Collections.Generic;
 
-#nullable disable
-namespace Scada.Comm.Drivers.DrvAnemon;
+namespace Scada.Comm.Drivers.DrvAnemon3;
 
 internal static class CnlPrototypeFactory
 {

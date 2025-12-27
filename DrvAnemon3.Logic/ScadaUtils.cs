@@ -2,7 +2,7 @@ using Scada.Comm.Config;
 using Scada.Comm.Devices;
 using Scada.Config;
 
-namespace Scada.Comm.Drivers.DrvAnemon
+namespace Scada.Comm.Drivers.DrvAnemon3
 {
     /// <summary>
     /// Утилиты Rapid SCADA для работы с конфигурацией
