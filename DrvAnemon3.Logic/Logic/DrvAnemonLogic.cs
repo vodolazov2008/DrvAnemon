@@ -1,5 +1,5 @@
 ﻿// Decompiled with JetBrains decompiler
-// Type: Scada.Comm.Drivers.DrvAnemon3.Logic.DrvAnemonLogic
+// Type: Scada.Comm.Drivers.DrvAnemon3.Logic.DrvAnemon3Logic
 // Assembly: DrvAnemon3.Logic, Version=3.0.0.0, Culture=neutral, PublicKeyToken=null
 // MVID: EDD75D42-CE83-4E55-B8C5-83132A68E0A4
 // Assembly location: D:\RapidScada\DrvAnemon3\SCADA\ScadaComm\Drv\DrvAnemon3.Logic.dll
@@ -12,9 +12,9 @@ namespace Scada.Comm.Drivers.DrvAnemon3.Logic
     /// <summary>
     /// Логика драйвера Anemon для HTTP протокола версии 3
     /// </summary>
-    public class DrvAnemonLogic : DriverLogic
+    public class DrvAnemon3Logic : DriverLogic
     {
-        public DrvAnemonLogic(ICommContext commContext)
+        public DrvAnemon3Logic(ICommContext commContext)
             : base(commContext)
         {
         }
