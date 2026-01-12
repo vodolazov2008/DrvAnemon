@@ -4,21 +4,24 @@
 // MVID: 32160B11-AF08-44A7-A737-2520F961A88B
 // Assembly location: D:\RapidScada\DrvAnemon3\SCADA\ScadaAdmin\Lib\DrvAnemon3.View.dll
 
+using Scada.Comm;
 using Scada.Comm.Config;
 using Scada.Comm.Devices;
 using System.Collections.Generic;
 
 namespace Scada.Comm.Drivers.DrvAnemon3.View;
 
-internal class DevAnemonView(
-  DriverView parentView,
-  LineConfig lineConfig,
-  DeviceConfig deviceConfig) : DeviceView(parentView, lineConfig, deviceConfig)
+internal class DevAnemonView : DeviceView
 {
-  public virtual PollingOptions GetPollingOptions() => new PollingOptions(3000, 200);
+    public DevAnemonView(DriverView parentView, LineConfig lineConfig, DeviceConfig deviceConfig) 
+        : base(parentView, lineConfig, deviceConfig)
+    {
+    }
 
-  public virtual ICollection<CnlPrototype> GetCnlPrototypes()
-  {
-    return (ICollection<CnlPrototype>) CommUtils.GetCnlPrototypes(CnlPrototypeFactory.GetCnlPrototypeGroups());
-  }
+    public override PollingOptions GetPollingOptions() => new PollingOptions(3000, 200);
+
+    public override ICollection<CnlPrototype> GetCnlPrototypes()
+    {
+        return CnlPrototypeFactory.GetCnlPrototypeGroups().GetCnlPrototypes();
+    }
 }

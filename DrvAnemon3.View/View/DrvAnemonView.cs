@@ -11,20 +11,20 @@ namespace Scada.Comm.Drivers.DrvAnemon3.View;
 
 public class DrvAnemonView : DriverView
 {
-  public DrvAnemonView() => this.CanCreateDevice = true;
+    public DrvAnemonView() => this.CanCreateDevice = true;
 
-  public virtual string Name => "Анемон";
+    public override string Name => "Анемон";
 
-  public virtual string Descr
-  {
-    get
+    public override string Descr
     {
-      return "Принимает данные от контроллеров Анемон производства Дисистех.\n\nПараметры канала связи:\nТип: TCP-сервер,\nПоведение: Slave,\nРежим соединения: Индивидуальное,\nСопоставление устройств: Определяется драйвером.\n\nПользовательские параметры линии связи:\nDataLifetime - время актуальности текущих данных, с. По умолчанию 600.\nProtocolVersion - версия протокола, 1 или 2. По умолчанию 1.\n\nПараметр устройства:\nСтроковый адрес - идентификатор контроллера.";
+        get
+        {
+            return "Принимает данные от контроллеров Анемон производства Дисистех.\n\nПараметры канала связи:\nТип: TCP-сервер,\nПоведение: Slave,\nРежим соединения: Индивидуальное,\nСопоставление устройств: Определяется драйвером.\n\nПользовательские параметры линии связи:\nDataLifetime - время актуальности текущих данных, с. По умолчанию 600.\nProtocolVersion - версия протокола, 1 или 2. По умолчанию 1.\n\nПараметр устройства:\nСтроковый адрес - идентификатор контроллера.";
+        }
     }
-  }
 
-  public virtual DeviceView CreateDeviceView(LineConfig lineConfig, DeviceConfig deviceConfig)
-  {
-    return (DeviceView) new DevAnemonView((DriverView) this, lineConfig, deviceConfig);
-  }
+    public override DeviceView CreateDeviceView(LineConfig lineConfig, DeviceConfig deviceConfig)
+    {
+        return new DevAnemonView(this, lineConfig, deviceConfig);
+    }
 }

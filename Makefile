@@ -2,10 +2,10 @@
 # Автоматизация сборки .NET проектов Rapid SCADA драйвера
 
 # Переменные
-SOLUTION = DrvAnemon.sln
-LOGIC_PROJECT = DrvAnemon.Logic/DrvAnemon.Logic.csproj
-VIEW_PROJECT = DrvAnemon.View/DrvAnemon.View.csproj
-BUILD_CONFIG = Debug
+SOLUTION = DrvAnemon3.sln
+LOGIC_PROJECT = DrvAnemon3.Logic/DrvAnemon3.Logic.csproj
+VIEW_PROJECT = DrvAnemon3.View/DrvAnemon3.View.csproj
+BUILD_CONFIG = Release
 DOTNET = dotnet
 
 # Цели по умолчанию
